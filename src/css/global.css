@@ -1,0 +1,25 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: #AEB9C0;
+  --color-foreground: #0D1012;
+  --color-accent: #C94435;
+  --color-secondary-text: #4F5A62;
+  --color-border-custom: #85929A;
+  --color-panel: #17181C;
+  --color-sage: #75878A;
+  --color-sand: #D18A62;
+  --color-steel: #5B657A;
+
+  --font-sans: Arial, Helvetica, sans-serif;
+  --font-serif: Georgia, serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+}
