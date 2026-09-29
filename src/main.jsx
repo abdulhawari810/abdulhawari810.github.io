@@ -13,6 +13,7 @@ import Login from "@/views/login";
 import Dashboard from "@/views/dashboard";
 import { seedDatabase } from "@/database/seeders";
 import { migrateToFirestore, checkFirestoreData } from "@/database/migrate";
+import { logError, logMigration } from "@/lib/logger";
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
@@ -82,9 +83,9 @@ async function initApp() {
   // Seed IndexedDB
   try {
     await seedDatabase();
-    console.log("✅ IndexedDB seeded");
+    logMigration('seed', 'IndexedDB seeded');
   } catch (error) {
-    console.error("❌ IndexedDB seed gagal:", error);
+    logError('IndexedDB seed gagal', error);
   }
 
   // Check if Firestore has data
@@ -95,17 +96,17 @@ async function initApp() {
       // Migrate from IndexedDB to Firestore
       const result = await migrateToFirestore();
       if (result.success) {
-        console.log("✅ Migration completed");
+        logMigration('complete', 'Migration completed');
       } else {
-        console.error("❌ Migration failed:", result.message);
+        logError('Migration failed', new Error(result.message));
       }
     } else {
-      console.log("✅ Firestore already has data, skipping migration");
+      logMigration('skip', 'Firestore already has data, skipping migration');
     }
   } catch (error) {
     // Jaringan / Firestore tidak tersedia saat boot. Aplikasi tetap dirender,
     // error jaringan ditampilkan lewat ErrorBoundary.
-    console.error("❌ Bootstrap Firestore gagal:", error);
+    logError('Bootstrap Firestore gagal', error);
   }
 
   // Render app
@@ -114,7 +115,7 @@ async function initApp() {
 
 initApp().catch((error) => {
   // Gagal total sebelum sempat render - tampilkan lewat boundary yang sama.
-  console.error("❌ Fatal error saat boot aplikasi:", error);
+  logError('Fatal error saat boot aplikasi', error);
   if (appRoot) return;
   renderApp(<ErrorBoundary error={error} />);
 });

@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
+import { logWarn } from "@/lib/logger";
 
 // Firebase configuration - Ganti dengan config Firebase Anda
 const firebaseConfig = {
@@ -23,7 +24,7 @@ if (isFirebaseConfigured()) {
   app = initializeApp(firebaseConfig);
   auth = getAuth(app);
 } else {
-  console.warn("Firebase not configured. Please check your .env file.");
+  logWarn("Firebase not configured. Please check your .env file.");
 }
 
 export { auth };

@@ -2,6 +2,7 @@ import { Component } from "react";
 import ErrorNetwork from "@/components/errorNetwork";
 import { IS_DEVELOPMENT } from "@/lib/environment";
 import { getErrorMessage, resolveHttpCode } from "@/lib/errorInfo";
+import { logError } from "@/lib/logger";
 
 /**
  * Error Boundary untuk menangkap error saat render.
@@ -42,6 +43,11 @@ export default class ErrorBoundary extends Component {
       console.log("Component stack:", info?.componentStack);
       console.groupEnd();
     }
+
+    logError('React Error Boundary caught', error, {
+      componentStack: info?.componentStack,
+      httpCode: resolveHttpCode(error)
+    });
 
     this.props.onError?.(error, info);
   }

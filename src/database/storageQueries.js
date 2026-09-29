@@ -1,4 +1,5 @@
 import { storage, ref, uploadBytes, getDownloadURL, deleteObject } from "@/lib/storage";
+import { logError } from "@/lib/logger";
 
 // ==================== AVATAR UPLOAD ====================
 
@@ -13,10 +14,9 @@ export async function uploadAvatar(file, userId = "main") {
     // Get download URL
     const downloadURL = await getDownloadURL(snapshot.ref);
 
-    console.log("✅ Avatar uploaded successfully:", downloadURL);
     return downloadURL;
   } catch (error) {
-    console.error("❌ Failed to upload avatar:", error);
+    logError('Failed to upload avatar', error);
     throw error;
   }
 }
@@ -25,9 +25,8 @@ export async function deleteAvatar(userId = "main") {
   try {
     const storageRef = ref(storage, `avatars/${userId}`);
     await deleteObject(storageRef);
-    console.log("✅ Avatar deleted successfully");
   } catch (error) {
-    console.error("❌ Failed to delete avatar:", error);
+    logError('Failed to delete avatar', error);
     throw error;
   }
 }
@@ -38,7 +37,7 @@ export async function getAvatarUrl(userId = "main") {
     const downloadURL = await getDownloadURL(storageRef);
     return downloadURL;
   } catch (error) {
-    console.error("❌ Failed to get avatar URL:", error);
+    logError('Failed to get avatar URL', error);
     return null;
   }
 }

@@ -5,9 +5,10 @@ import {
   getProfile,
   getUser,
 } from "./projectQueries"; // Dexie queries
+import { logError, logMigration } from "@/lib/logger";
 
 export async function migrateToFirestore() {
-  console.log("🔄 Starting migration from IndexedDB to Firestore...");
+  logMigration('start', 'Starting migration from IndexedDB to Firestore...');
 
   try {
     // Check if already migrated
@@ -15,18 +16,18 @@ export async function migrateToFirestore() {
     const profileSnap = await getDoc(profileRef);
 
     if (profileSnap.exists()) {
-      console.log("⚠️  Data already exists in Firestore. Skipping migration.");
+      logMigration('skip', 'Data already exists in Firestore. Skipping migration.');
       return { success: true, message: "Already migrated" };
     }
 
     // 1. Migrate Profile
-    console.log("📦 Migrating profile...");
+    logMigration('profile', 'Migrating profile...');
     const profile = await getProfile();
     if (profile) {
       // Handle avatar_url - if too large, use default
       let avatarUrl = profile.avatar_url || "";
       if (avatarUrl.length > 500000) {
-        console.log("⚠️  avatar_url too large, using default.png");
+        logMigration('profile', 'avatar_url too large, using default.png', { warning: true });
         avatarUrl = "default.png";
       }
 
@@ -49,13 +50,13 @@ export async function migrateToFirestore() {
         badge_top: profile.badge_top || "",
         badge_bottom: profile.badge_bottom || "",
       });
-      console.log("✅ Profile migrated");
+      logMigration('profile', 'Profile migrated', { success: true });
     } else {
-      console.log("⚠️  No profile found in IndexedDB");
+      logMigration('profile', 'No profile found in IndexedDB', { warning: true });
     }
 
     // 2. Migrate Projects
-    console.log("📦 Migrating projects...");
+    logMigration('projects', 'Migrating projects...');
     const projects = await getAllProjects();
     if (projects.length > 0) {
       for (const project of projects) {
@@ -75,13 +76,13 @@ export async function migrateToFirestore() {
           created_at: project.created_at || new Date().toISOString(),
         });
       }
-      console.log(`✅ ${projects.length} projects migrated`);
+      logMigration('projects', `${projects.length} projects migrated`, { count: projects.length, success: true });
     } else {
-      console.log("⚠️  No projects found in IndexedDB");
+      logMigration('projects', 'No projects found in IndexedDB', { warning: true });
     }
 
     // 3. Migrate Users
-    console.log("📦 Migrating users...");
+    logMigration('users', 'Migrating users...');
     const user = await getUser();
     if (user) {
       await setDoc(doc(db, "users", "main"), {
@@ -92,15 +93,15 @@ export async function migrateToFirestore() {
         skill: user.skill || "",
         birthday: user.birthday || "",
       });
-      console.log("✅ User migrated");
+      logMigration('users', 'User migrated', { success: true });
     } else {
-      console.log("⚠️  No user found in IndexedDB");
+      logMigration('users', 'No user found in IndexedDB', { warning: true });
     }
 
-    console.log("🎉 Migration completed successfully!");
+    logMigration('complete', 'Migration completed successfully!', { success: true });
     return { success: true, message: "Migration completed" };
   } catch (error) {
-    console.error("❌ Migration failed:", error);
+    logError('Migration failed', error);
     return { success: false, message: error.message };
   }
 }
@@ -111,7 +112,7 @@ export async function checkFirestoreData() {
     const profileSnap = await getDoc(profileRef);
     return profileSnap.exists();
   } catch (error) {
-    console.error("Error checking Firestore data:", error);
+    logError('Error checking Firestore data', error);
     return false;
   }
 }
