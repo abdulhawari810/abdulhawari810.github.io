@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 import { Outlet } from "react-router-dom";
-import { Toaster } from "sonner";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
-import { getProfile } from "@/database/projectQueries";
+import { getProfile } from "@/database/firestoreQueries";
 
 export default function App() {
   const [profile, setProfile] = useState(null);
@@ -23,17 +22,6 @@ export default function App() {
         <Outlet />
       </main>
       <Footer profile={profile} />
-      <Toaster
-        position="top-right"
-        toastOptions={{
-          className: "bg-background text-foreground border border-border-custom",
-          style: {
-            background: "var(--background)",
-            color: "var(--foreground)",
-            border: "1px solid var(--border-custom)",
-          },
-        }}
-      />
     </div>
   );
 }

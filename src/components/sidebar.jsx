@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import ThemeToggle from "@/components/themeToggle";
 
 export default function Sidebar({ profile }) {
   const handleNavClick = (e, sectionId) => {
@@ -46,6 +47,14 @@ export default function Sidebar({ profile }) {
           </a>
         ))}
       </nav>
+
+      {/* Theme Toggle */}
+      <div className="mt-auto pt-6">
+        <ThemeToggle className="w-full rounded-lg" />
+        <span className="block mt-2 text-[10px] tracking-[0.2em] uppercase text-secondary-text text-center">
+          Theme
+        </span>
+      </div>
     </aside>
   );
 }

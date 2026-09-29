@@ -1,6 +1,6 @@
 # Working Progress - Portfolio Project
 
-**Date:** 2026-09-28  
+**Date:** 2026-09-29  
 **Status:** In Progress  
 **Next Session:** Continue with remaining tasks
 
@@ -8,7 +8,7 @@
 
 ## Project Overview
 
-Portfolio website dengan dashboard admin untuk manajemen data. Menggunakan React + Vite + Tailwind CSS + IndexedDB (Dexie) + Firebase Auth.
+Portfolio website dengan dashboard admin untuk manajemen data. Menggunakan React + Vite + Tailwind CSS + Firebase Firestore + Firebase Auth.
 
 ---
 
@@ -26,95 +26,109 @@ Portfolio website dengan dashboard admin untuk manajemen data. Menggunakan React
 ```
 src/
 ├── components/
-│   ├── navbar.jsx          ← Navigasi utama
-│   ├── footer.jsx          ← Footer
-│   ├── card.jsx            ← Komponen card (tidak digunakan)
-│   ├── sidebar.jsx         ← Sidebar dashboard
-│   ├── projectModal.jsx    ← Modal add/edit project
+│   ├── navbar.jsx          ← Navigasi utama (dinamis dari Firestore)
+│   ├── footer.jsx          ← Footer (dinamis dari Firestore)
+│   ├── sidebar.jsx         ← Sidebar dashboard (dinamis dari Firestore)
+│   ├── projectModal.jsx    ← Modal add/edit project (dengan thumbnail URL)
 │   └── toast.jsx           ← Toast provider (tidak digunakan, Toaster di app.jsx)
 ├── css/
 │   └── global.css          ← Tailwind config + warna tokens
 ├── database/
-│   ├── db.js               ← Dexie database setup
-│   ├── seeders.js          ← Data seeding
-│   └── projectQueries.js   ← Query functions (CRUD)
-├── layout/
-│   └── app.jsx             ← Layout utama dengan Outlet + Toaster
-├── lib/
-│   └── firebase.js         ← Firebase config
+│   ├── db.js               ← Dexie database setup (tidak digunakan)
+│   ├── seeders.js          ← Data seeding (tidak digunakan)
+│   ├── projectQueries.js   ← Dexie query functions (tidak digunakan)
+│   ├── firestoreQueries.js ← Firestore query functions (DIGUNAKAN)
+│   ├── storageQueries.js   ← Storage query functions (tidak digunakan)
+│   └── migrate.js          ← Migration script IndexedDB → Firestore
 ├── contexts/
 │   └── AuthContext.jsx     ← Auth state management
+├── lib/
+│   ├── firebase.js         ← Firebase config
+│   ├── firestore.js        ← Firestore config (DIGUNAKAN)
+│   └── storage.js          ← Storage config (tidak digunakan)
 ├── views/
-│   ├── home.jsx            ← Halaman utama
-│   ├── detail.jsx          ← Halaman detail project
-│   ├── login.jsx           ← Halaman login admin
-│   └── dashboard.jsx       ← Dashboard manajemen
+│   ├── home.jsx            ← Halaman utama (dinamis dari Firestore)
+│   ├── detail.jsx          ← Halaman detail project (dinamis dari Firestore)
+│   ├── login.jsx           ← Halaman login admin (Firebase Auth)
+│   └── dashboard.jsx       ← Dashboard manajemen (Firestore + loading states)
+├── layout/
+│   └── app.jsx             ← Layout utama dengan Outlet + Toaster
 ├── App.jsx
 ├── index.css
-└── main.jsx                ← Router setup + AuthProvider
+└── main.jsx                ← Router setup + AuthProvider + Migration
 ```
 
-### 3. Database Schema (IndexedDB + Dexie)
+### 3. Database Schema (Firestore)
 
-#### Table: `users`
-| Field | Type | Description |
-|-------|------|-------------|
-| id | ++id | Auto increment |
-| username | string | Username |
-| email | string | Email |
+#### Collection: `users`
+
+| Field        | Type   | Description   |
+| ------------ | ------ | ------------- |
+| username     | string | Username      |
+| email        | string | Email         |
 | phone_number | string | Nomor telepon |
-| gender | string | Jenis kelamin |
-| skill | string | Skill |
-| birthday | string | Tanggal lahir |
+| gender       | string | Jenis kelamin |
+| skill        | string | Skill         |
+| birthday     | string | Tanggal lahir |
 
-#### Table: `profile`
-| Field | Type | Description |
-|-------|------|-------------|
-| id | ++id | Auto increment |
-| username | string | Username |
-| full_name | string | Nama lengkap |
-| role | string | Posisi/jabatan |
-| tagline | string | Tagline |
-| heading | string | Heading utama |
-| about | string | Tentang |
-| bio | string | Biografi |
-| location | string | Lokasi |
-| experience_years | number | Tahun pengalaman |
-| total_projects | number | Total project |
-| average_rating | number | Rating rata-rata |
-| email | string | Email |
-| phone | string | Nomor telepon |
+#### Collection: `profile`
 
-#### Table: `projects`
-| Field | Type | Description |
-|-------|------|-------------|
-| id | ++id | Auto increment |
-| title | string | Judul project |
-| subtitle | string | Sub judul |
-| year | string | Tahun |
-| category | string | Kategori (branding/product/web) |
-| color | string | Warna (sage/sand/steel) |
-| initials | string | Inisial |
-| label | string | Label |
-| description | string | Deskripsi |
-| client | string | Klien |
-| role | string | Peran |
-| duration | string | Durasi |
-| demo_url | string | URL demo |
-| created_at | ISO string | Tanggal dibuat |
+| Field            | Type   | Description              |
+| ---------------- | ------ | ------------------------ |
+| username         | string | Username                 |
+| full_name        | string | Nama lengkap             |
+| role             | string | Posisi/jabatan           |
+| tagline          | string | Tagline                  |
+| heading          | string | Heading utama            |
+| about_heading    | string | Heading about section    |
+| about            | string | Tentang                  |
+| bio              | string | Biografi                 |
+| location         | string | Lokasi                   |
+| experience_years | number | Tahun pengalaman         |
+| total_projects   | number | Total project            |
+| average_rating   | number | Rating rata-rata         |
+| email            | string | Email                    |
+| phone            | string | Nomor telepon            |
+| avatar_url       | string | URL gambar profile       |
+| badge_top        | string | Badge atas kanan artwork |
+| badge_bottom     | string | Badge bawah kiri artwork |
+
+#### Collection: `projects`
+
+| Field         | Type       | Description                     |
+| ------------- | ---------- | ------------------------------- |
+| title         | string     | Judul project                   |
+| subtitle      | string     | Sub judul                       |
+| year          | string     | Tahun                           |
+| category      | string     | Kategori (branding/product/web) |
+| color         | string     | Warna (sage/sand/steel)         |
+| initials      | string     | Inisial                         |
+| label         | string     | Label                           |
+| description   | string     | Deskripsi                       |
+| client        | string     | Klien                           |
+| role          | string     | Peran                           |
+| duration      | string     | Durasi                          |
+| demo_url      | string     | URL demo                        |
+| thumbnail_url | string     | URL thumbnail gambar            |
+| created_at    | ISO string | Tanggal dibuat                  |
 
 ### 4. Pages & Features
 
 #### Home Page (`/`)
-- [x] Hero section dengan artwork panel
-- [x] Stats section (dynamic dari IndexedDB)
-- [x] About section (dynamic dari IndexedDB)
+
+- [x] Hero section dengan artwork panel (dinamis dari Firestore)
+- [x] Profile avatar di artwork panel (URL gambar)
+- [x] Badge dinamis (Designer/Branding) di artwork panel
+- [x] Stats section (dinamis dari Firestore)
+- [x] About section (dinamis dari Firestore)
 - [x] Selected Works dengan filter tabs
-- [x] Contact section
+- [x] Project cards dengan thumbnail URL atau inisial
+- [x] Contact section (email dinamis)
 - [x] Smooth scroll navigation
 - [x] Responsive design (mobile & desktop)
 
 #### Detail Page (`/detail/:id`)
+
 - [x] Breadcrumb navigation
 - [x] Project header dengan title & description
 - [x] Hero image dengan initials
@@ -124,6 +138,7 @@ src/
 - [x] Project meta (client, year, role, duration)
 
 #### Login Page (`/login`)
+
 - [x] Email/password form
 - [x] Auto-fill email dari `.env`
 - [x] Firebase Auth integration
@@ -131,43 +146,71 @@ src/
 - [x] Redirect ke dashboard setelah login
 
 #### Dashboard (`/dashboard`) - Protected Route
+
 - [x] Sidebar navigation dengan scroll to section
 - [x] Stats cards (Total Projects, Views, Likes)
 - [x] Projects CRUD (Create, Read, Update, Delete)
 - [x] Profile form (semua field)
+- [x] Avatar URL input (bukan upload file)
+- [x] Badge Top Right & Badge Bottom Left inputs
 - [x] Toast notifications untuk semua aksi
 - [x] Delete confirmation modal
-- [x] Project modal (add/edit)
+- [x] Project modal (add/edit) dengan thumbnail URL
+- [x] Loading state pada semua tombol aksi
+- [x] Loading state saat fetch data
+- [x] Error state dengan retry button
+- [x] Empty state untuk projects
+- [x] Greeting dinamis (Good morning/afternoon/evening/night)
+- [x] Dropdown menu (Dark Mode, Keluar Akun)
 
-### 5. Firebase Auth
+### 5. Firebase Integration
 
-- [x] Firebase configuration di `.env`
-- [x] Auth context untuk state management
+#### Firebase Auth
+
+- [x] Email/Password authentication
 - [x] Protected route untuk dashboard
 - [x] Login/logout functionality
 - [x] Auto-fill email dari `VITE_ADMIN_EMAIL`
+
+#### Firebase Firestore
+
+- [x] Replace IndexedDB dengan Firestore
+- [x] Auto-migration dari IndexedDB ke Firestore
+- [x] Real-time data fetching
+- [x] CRUD operations
+
+#### Firebase Storage
+
+- [x] Setup config (tidak digunakan, avatar pakai URL)
 
 ### 6. UI/UX
 
 - [x] Palet warna kustom (background, foreground, accent, dll)
 - [x] Font: Arial (sans) + Georgia (serif italic)
-- [x] Toast notifications (sonner)
+- [x] Toast notifications (sonner) - Toaster di dashboard & layout
 - [x] Responsive design
 - [x] Smooth scroll behavior
 - [x] Hover effects
 - [x] Mobile-friendly navbar
+- [x] Loading spinner pada tombol aksi
+- [x] Empty state dengan icon
+- [x] Error state dengan retry
+- [x] Preview gambar untuk thumbnail URL
 
 ### 7. Utilities
 
 - [x] `cn()` helper untuk class merging
 - [x] Scroll to section dengan clear hash URL
 - [x] Auto-fill email dari environment variables
+- [x] Greeting dinamis berdasarkan waktu
+- [x] Loading state management
 
 ---
 
 ## Environment Variables
 
 ### `.env`
+
 ```env
 # Firebase Configuration
 VITE_FIREBASE_API_KEY=your_api_key
@@ -194,46 +237,147 @@ npm run lint      # Lint dengan oxlint
 
 ---
 
+## Firebase Security Rules
+
+### Firestore Rules
+
+```javascript
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /projects/{project} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /profile/{profile} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    match /users/{user} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+```
+
+### Storage Rules
+
+```javascript
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /avatars/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+  }
+}
+```
+
+---
+
+## States & Loading
+
+### Loading States
+
+| State                | Keterangan                           |
+| -------------------- | ------------------------------------ |
+| **Initial Loading**  | Spinner saat fetch data              |
+| **Saving Profile**   | Spinner pada tombol Save Changes     |
+| **Saving Project**   | Spinner pada tombol Add/Edit Project |
+| **Deleting Project** | Spinner pada tombol Delete           |
+
+### Error States
+
+| State            | Keterangan                        |
+| ---------------- | --------------------------------- |
+| **Fetch Error**  | Error message dengan tombol Retry |
+| **Save Error**   | Toast error notification          |
+| **Delete Error** | Toast error notification          |
+
+### Empty States
+
+| State           | Keterangan                        |
+| --------------- | --------------------------------- |
+| **No Projects** | Icon + pesan + tombol Add Project |
+
+---
+
+## Toast Notifications
+
+| Operasi            | Toast                           |
+| ------------------ | ------------------------------- |
+| **Add Project**    | "Project added successfully!"   |
+| **Update Project** | "Project updated successfully!" |
+| **Delete Project** | "Project deleted successfully!" |
+| **Update Profile** | "Profile updated successfully!" |
+| **Logout**         | "Logged out successfully!"      |
+| **Error**          | "Failed to..."                  |
+
+---
+
 ## Known Issues & Notes
 
-### Clear IndexedDB
-Jika data tidak berubah setelah update, clear IndexedDB:
+### Clear Browser Data
+
+Jika data tidak berubah setelah update:
+
 1. Buka DevTools (F12)
-2. Tab **Application** → **IndexedDB**
-3. Klik kanan **PortfolioDB** → **Delete database**
+2. Tab **Application** → **Local Storage**
+3. Hapus `firestore_migrated` flag
 4. Refresh halaman
 
-### Firebase Setup
-Pastikan Firebase sudah dikonfigurasi:
-1. Email/Password auth enabled
-2. User sudah daftar di Authentication → Users
-3. Web app sudah terdaftar
-4. Config sudah di-copy ke `.env`
+### Firestore Migration
+
+- Migration otomatis dilakukan saat app start
+- Data IndexedDB di-migrate ke Firestore
+- Flag `firestore_migrated` di Local Storage
+
+### Avatar URL
+
+- Avatar menggunakan URL biasa (bukan upload file)
+- Preview muncul saat input URL
+- Default: huruf "A" jika kosong
+
+### Thumbnail URL
+
+- Project thumbnail menggunakan URL biasa
+- Preview muncul di form modal
+- Default: inisial huruf jika kosong
 
 ---
 
 ## Next Session Tasks
 
 ### Priority 1: Testing & Bug Fixes
-- [ ] Test semua CRUD operations
-- [ ] Test responsive design di berbagai device
+
+- [ ] Test semua CRUD operations dengan Firestore
+- [ ] Test responsive design di bagai device
 - [ ] Test Firebase Auth flow
 - [ ] Fix bugs yang ditemukan
 
 ### Priority 2: Features
-- [ ] Add image upload untuk project
+
+- [ ] Implementasi Dark Mode
 - [ ] Add social media links
-- [ ] Add dark mode toggle
-- [ ] Add loading states
-- [ ] Add empty states
+- [ ] Add loading states untuk images
+- [ ] Add empty states untuk images
 
 ### Priority 3: Deployment
+
 - [ ] Setup Vercel deployment
 - [ ] Configure environment variables di Vercel
 - [ ] Test production build
 - [ ] Setup custom domain (optional)
 
 ### Priority 4: Polish
+
 - [ ] Add animations/transitions
 - [ ] Optimize performance
 - [ ] Add SEO meta tags
@@ -242,14 +386,27 @@ Pastikan Firebase sudah dikonfigurasi:
 
 ---
 
-## Notes for Next Session
+## Migration Notes
 
-1. **Clear IndexedDB** jika data tidak berubah setelah schema update
-2. **Restart dev server** setelah mengubah `.env`
-3. **Check console** untuk error messages
-4. **Test di Incognito Mode** untuk memastikan data fresh
+### IndexedDB → Firestore
+
+- ✅ Migration script dibuat
+- ✅ Auto-migration saat app start
+- ✅ Semua import sudah diupdate ke Firestore
+- ✅ Dexie files bisa dihapus (opsional)
+
+### Files yang Tidak Digunakan
+
+| File                             | Keterangan                        |
+| -------------------------------- | --------------------------------- |
+| `src/database/db.js`             | Dexie schema (tidak digunakan)    |
+| `src/database/seeders.js`        | Dexie seeders (tidak digunakan)   |
+| `src/database/projectQueries.js` | Dexie queries (tidak digunakan)   |
+| `src/database/storageQueries.js` | Storage queries (tidak digunakan) |
+| `src/lib/storage.js`             | Storage config (tidak digunakan)  |
+| `src/components/toast.jsx`       | Toast provider (tidak digunakan)  |
 
 ---
 
-**Last Updated:** 2026-09-28  
+**Last Updated:** 2026-09-29  
 **By:** AI Assistant

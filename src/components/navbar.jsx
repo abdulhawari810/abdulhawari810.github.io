@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import ThemeToggle from "@/components/themeToggle";
 
 export default function Navbar({ profile }) {
   const handleNavClick = (e, sectionId) => {
@@ -50,15 +51,19 @@ export default function Navbar({ profile }) {
         </a>
       </div>
 
-      {/* CTA */}
-      <a
-        href="#contact"
-        onClick={(e) => handleNavClick(e, "contact")}
-        className="flex items-center gap-2 text-xs md:text-sm font-semibold hover:text-accent transition-colors shrink-0"
-      >
-        <span className="w-2 h-2 rounded-full bg-accent"></span>
-        <span className="whitespace-nowrap">Let's talk</span>
-      </a>
+      {/* Theme Toggle + CTA */}
+      <div className="flex items-center gap-3 md:gap-4 shrink-0">
+        <ThemeToggle className="w-9 h-9 md:w-10 md:h-10" />
+
+        <a
+          href="#contact"
+          onClick={(e) => handleNavClick(e, "contact")}
+          className="flex items-center gap-2 text-xs md:text-sm font-semibold hover:text-accent transition-colors"
+        >
+          <span className="w-2 h-2 rounded-full bg-accent"></span>
+          <span className="whitespace-nowrap">Let's talk</span>
+        </a>
+      </div>
     </nav>
   );
 }

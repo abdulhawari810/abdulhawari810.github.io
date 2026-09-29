@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import ThemeToggle from "@/components/themeToggle";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -48,13 +49,17 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
+    <div className="min-h-screen flex items-center justify-center px-4 relative">
+      <div className="absolute top-4 right-4 md:top-6 md:right-6">
+        <ThemeToggle />
+      </div>
+
       <div className="w-full max-w-md">
         <h1 className="text-3xl font-bold mb-8 text-center">Admin Login</h1>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
-            <div className="p-4 bg-red-600/10 text-red-600 text-sm rounded-lg">
+            <div className="p-4 bg-danger/10 text-danger text-sm rounded-lg">
               {error}
             </div>
           )}

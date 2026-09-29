@@ -23,6 +23,8 @@ export async function seedDatabase() {
       role: "Independent UI/UX Designer",
       tagline: "Crafting intuitive, user-friendly experiences through wireframing, prototyping, and visual design.",
       heading: "Design That feels human.",
+      about_heading: "Good design is quiet. It stays with you.",
+      about_description: "I'm Ardi, a multidisciplinary designer focused on identity, interfaces, and the small details between them.\n\nFor the last 7 years, I've partnered with people who care deeply about what they make — from early-stage founders to teams building for millions.",
       about:
         "I'm Ardi, a multidisciplinary designer focused on identity, interfaces, and the small details between them.",
       bio: "For the last 7 years, I've partnered with people who care deeply about what they make — from early-stage founders to teams building for millions.",
@@ -32,6 +34,9 @@ export async function seedDatabase() {
       average_rating: 5.0,
       email: "hello@ardipratama.studio",
       phone: "+62 812 3456 7890",
+      avatar_url: "",
+      badge_top: "Designer",
+      badge_bottom: "Branding",
     });
   }
 
@@ -51,6 +56,7 @@ export async function seedDatabase() {
         role: "Brand Designer",
         duration: "2 Months",
         demo_url: "#",
+        thumbnail_url: "",
         created_at: new Date().toISOString(),
       },
       {
@@ -67,6 +73,7 @@ export async function seedDatabase() {
         role: "Product Designer",
         duration: "3 Months",
         demo_url: "#",
+        thumbnail_url: "",
         created_at: new Date().toISOString(),
       },
       {
@@ -83,6 +90,7 @@ export async function seedDatabase() {
         role: "UI/UX Designer",
         duration: "4 Months",
         demo_url: "#",
+        thumbnail_url: "",
         created_at: new Date().toISOString(),
       },
     ]);

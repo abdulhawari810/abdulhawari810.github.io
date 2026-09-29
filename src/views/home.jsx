@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { getAllProjects, getProfile } from "@/database/projectQueries";
+import { getAllProjects, getProfile } from "@/database/firestoreQueries";
 
 const filters = [
   { id: "all", label: "All work" },
@@ -125,26 +125,38 @@ export default function Home() {
           <div className="w-full h-full min-h-[300px] md:min-h-[400px] bg-panel rounded-lg overflow-hidden relative">
             {/* Red Circle */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70%] aspect-square rounded-full bg-accent/90">
-              {/* Letter A */}
+              {/* Profile Image or Letter A */}
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-[8rem] md:text-[12rem] lg:text-[16rem] font-black text-panel leading-none select-none">
-                  A
-                </span>
+                {profile?.avatar_url ? (
+                  <img
+                    src={profile.avatar_url}
+                    alt="Profile"
+                    className="w-full h-full object-cover rounded-full"
+                  />
+                ) : (
+                  <span className="text-[8rem] md:text-[12rem] lg:text-[16rem] font-black text-panel leading-none select-none">
+                    A
+                  </span>
+                )}
               </div>
             </div>
 
-            {/* Badge - Designer */}
-            <div className="absolute top-4 md:top-8 right-4 md:right-8 bg-background text-foreground text-xs font-semibold px-3 md:px-4 py-1.5 md:py-2 rounded-full">
-              Designer
-            </div>
+            {/* Badge - Top Right */}
+            {profile?.badge_top && (
+              <div className="absolute top-4 md:top-8 right-4 md:right-8 bg-on-panel text-panel text-xs font-semibold px-3 md:px-4 py-1.5 md:py-2 rounded-full">
+                {profile.badge_top}
+              </div>
+            )}
 
-            {/* Badge - Branding */}
-            <div className="absolute bottom-4 md:bottom-8 left-4 md:left-8 bg-background text-foreground text-xs font-semibold px-3 md:px-4 py-1.5 md:py-2 rounded-full">
-              Branding
-            </div>
+            {/* Badge - Bottom Left */}
+            {profile?.badge_bottom && (
+              <div className="absolute bottom-4 md:bottom-8 left-4 md:left-8 bg-on-panel text-panel text-xs font-semibold px-3 md:px-4 py-1.5 md:py-2 rounded-full">
+                {profile.badge_bottom}
+              </div>
+            )}
 
             {/* Decorative ring */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] aspect-square rounded-full border border-border-custom/30"></div>
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] aspect-square rounded-full border border-on-panel/30"></div>
           </div>
 
           {/* Label under artwork */}
@@ -204,23 +216,48 @@ export default function Home() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Left - Heading */}
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-[1.1] tracking-tight">
-            Good design is quiet.
-            <br />
-            <span className="font-serif italic font-normal">
-              It stays with you.
-            </span>
+            {profile?.about_heading ? (
+              <>
+                {profile.about_heading.split(". ").slice(0, -1).join(". ")}.
+                <br />
+                <span className="font-serif italic font-normal">
+                  {profile.about_heading.split(". ").slice(-1)}
+                </span>
+              </>
+            ) : (
+              <>
+                Good design is quiet.
+                <br />
+                <span className="font-serif italic font-normal">
+                  It stays with you.
+                </span>
+              </>
+            )}
           </h2>
 
           {/* Right - Description */}
           <div className="flex flex-col justify-center">
-            <p className="text-sm text-secondary-text leading-relaxed mb-6">
-              {profile?.about ||
-                "I'm Ardi, a multidisciplinary designer focused on identity, interfaces, and the small details between them."}
-            </p>
-            <p className="text-sm text-secondary-text leading-relaxed mb-8">
-              {profile?.bio ||
-                "For the last 7 years, I've partnered with people who care deeply about what they make — from early-stage founders to teams building for millions."}
-            </p>
+            {profile?.about_description ? (
+              profile.about_description.split("\n\n").map((paragraph, index) => (
+                <p
+                  key={index}
+                  className="text-sm text-secondary-text leading-relaxed mb-6"
+                >
+                  {paragraph}
+                </p>
+              ))
+            ) : (
+              <>
+                <p className="text-sm text-secondary-text leading-relaxed mb-6">
+                  {profile?.about ||
+                    "I'm Ardi, a multidisciplinary designer focused on identity, interfaces, and the small details between them."}
+                </p>
+                <p className="text-sm text-secondary-text leading-relaxed mb-8">
+                  {profile?.bio ||
+                    "For the last 7 years, I've partnered with people who care deeply about what they make — from early-stage founders to teams building for millions."}
+                </p>
+              </>
+            )}
 
             {/* CTA Link */}
             <a
@@ -297,12 +334,22 @@ export default function Home() {
                   {String(index + 1).padStart(2, "0")}
                 </span>
 
-                {/* Initials */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-7xl md:text-8xl font-black text-background/90 group-hover:scale-110 transition-transform duration-300">
-                    {project.initials}
-                  </span>
-                </div>
+                {/* Thumbnail or Initials */}
+                {project.thumbnail_url ? (
+                  <div className="absolute inset-0">
+                    <img
+                      src={project.thumbnail_url}
+                      alt={project.title}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-7xl md:text-8xl font-black text-background/90 group-hover:scale-110 transition-transform duration-300">
+                      {project.initials}
+                    </span>
+                  </div>
+                )}
 
                 {/* Label */}
                 <span className="absolute bottom-4 right-4 text-xs font-semibold tracking-[0.15em] uppercase text-background/80">

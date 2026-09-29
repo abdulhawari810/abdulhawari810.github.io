@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
-import { getProjectById } from "@/database/projectQueries";
+import { getProjectById } from "@/database/firestoreQueries";
 
 const colorMap = {
   sage: "bg-sage",

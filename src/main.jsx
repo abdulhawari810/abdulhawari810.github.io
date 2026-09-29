@@ -1,21 +1,18 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import {
-  createBrowserRouter,
-  RouterProvider,
-  Navigate,
-} from "react-router-dom";
+import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
 import "@/css/global.css";
 
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
+import ErrorBoundary from "@/components/errorBoundary";
 import App from "@/layout/app";
 import Home from "@/views/home";
 import Detail from "@/views/detail";
 import Login from "@/views/login";
 import Dashboard from "@/views/dashboard";
 import { seedDatabase } from "@/database/seeders";
-
-import { Toaster } from "sonner";
+import { migrateToFirestore, checkFirestoreData } from "@/database/migrate";
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
@@ -64,49 +61,60 @@ const router = createBrowserRouter([
   },
 ]);
 
-// Seed database before rendering
-seedDatabase()
-  .then(() => {
-    createRoot(document.getElementById("root")).render(
-      <StrictMode>
-        <AuthProvider>
-          <Toaster
-            position="top-right"
-            toastOptions={{
-              className:
-                "bg-background text-foreground border border-border-custom",
-              style: {
-                background: "var(--background)",
-                color: "var(--foreground)",
-                border: "1px solid var(--border-custom)",
-              },
-            }}
-          />
-          <RouterProvider router={router} />
-        </AuthProvider>
-      </StrictMode>,
-    );
-  })
-  .catch((error) => {
-    console.error("Failed to seed database:", error);
-    // Still render the app even if seeding fails
-    createRoot(document.getElementById("root")).render(
-      <StrictMode>
-        <AuthProvider>
-          <Toaster
-            position="top-right"
-            toastOptions={{
-              className:
-                "bg-background! text-foreground border border-border-custom",
-              style: {
-                background: "var(--background)",
-                color: "var(--foreground)",
-                border: "1px solid var(--border-custom)",
-              },
-            }}
-          />
-          <RouterProvider router={router} />
-        </AuthProvider>
-      </StrictMode>,
-    );
-  });
+// Initialize app
+const rootElement = document.getElementById("root");
+let appRoot = null;
+
+function renderApp(content) {
+  appRoot ??= createRoot(rootElement);
+  appRoot.render(
+    <StrictMode>
+      <ErrorBoundary>
+        <ThemeProvider>
+          <AuthProvider>{content}</AuthProvider>
+        </ThemeProvider>
+      </ErrorBoundary>
+    </StrictMode>
+  );
+}
+
+async function initApp() {
+  // Seed IndexedDB
+  try {
+    await seedDatabase();
+    console.log("✅ IndexedDB seeded");
+  } catch (error) {
+    console.error("❌ IndexedDB seed gagal:", error);
+  }
+
+  // Check if Firestore has data
+  try {
+    const hasFirestoreData = await checkFirestoreData();
+
+    if (!hasFirestoreData) {
+      // Migrate from IndexedDB to Firestore
+      const result = await migrateToFirestore();
+      if (result.success) {
+        console.log("✅ Migration completed");
+      } else {
+        console.error("❌ Migration failed:", result.message);
+      }
+    } else {
+      console.log("✅ Firestore already has data, skipping migration");
+    }
+  } catch (error) {
+    // Jaringan / Firestore tidak tersedia saat boot. Aplikasi tetap dirender,
+    // error jaringan ditampilkan lewat ErrorBoundary.
+    console.error("❌ Bootstrap Firestore gagal:", error);
+  }
+
+  // Render app
+  renderApp(<RouterProvider router={router} />);
+}
+
+initApp().catch((error) => {
+  // Gagal total sebelum sempat render - tampilkan lewat boundary yang sama.
+  console.error("❌ Fatal error saat boot aplikasi:", error);
+  if (appRoot) return;
+  renderApp(<ErrorBoundary error={error} />);
+});

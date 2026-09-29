@@ -1,15 +1,58 @@
 @import "tailwindcss";
 
-@theme {
-  --color-background: #AEB9C0;
-  --color-foreground: #0D1012;
-  --color-accent: #C94435;
-  --color-secondary-text: #4F5A62;
-  --color-border-custom: #85929A;
-  --color-panel: #17181C;
-  --color-sage: #75878A;
-  --color-sand: #D18A62;
-  --color-steel: #5B657A;
+/* Class-based dark mode: pakai kelas `.dark` pada <html> */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Token warna - Light theme (default) */
+:root {
+  color-scheme: light;
+
+  --background: #aeb9c0;
+  --foreground: #0d1012;
+  --accent: #c94435;
+  --secondary-text: #4f5a62;
+  --border-custom: #85929a;
+  --panel: #17181c;
+  --on-panel: #aeb9c0;
+  --sage: #75878a;
+  --sand: #d18a62;
+  --steel: #5b657a;
+  --danger: #dc2626;
+  --danger-strong: #dc2626;
+}
+
+/* Token warna - Dark theme */
+.dark {
+  color-scheme: dark;
+
+  --background: #0d1012;
+  --foreground: #e9edef;
+  --accent: #e2604f;
+  --secondary-text: #9aa5ad;
+  --border-custom: #3a434a;
+  --panel: #16191d;
+  --on-panel: #e9edef;
+  --sage: #75878a;
+  --sand: #d18a62;
+  --steel: #5b657a;
+  --danger: #f87171;
+  --danger-strong: #b93b32;
+}
+
+/* Mapping token ke utility class Tailwind (inline supaya ikut berubah saat tema berganti) */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-accent: var(--accent);
+  --color-secondary-text: var(--secondary-text);
+  --color-border-custom: var(--border-custom);
+  --color-panel: var(--panel);
+  --color-on-panel: var(--on-panel);
+  --color-sage: var(--sage);
+  --color-sand: var(--sand);
+  --color-steel: var(--steel);
+  --color-danger: var(--danger);
+  --color-danger-strong: var(--danger-strong);
 
   --font-sans: Arial, Helvetica, sans-serif;
   --font-serif: Georgia, serif;
@@ -21,5 +64,14 @@
   }
   body {
     @apply bg-background text-foreground font-sans;
+  }
+
+  /* Transisi halus hanya saat tema berganti (kelas ini dipakai sesaat oleh ThemeContext) */
+  .theme-transition,
+  .theme-transition * {
+    transition:
+      background-color 0.25s ease,
+      border-color 0.25s ease,
+      color 0.25s ease;
   }
 }

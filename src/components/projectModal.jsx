@@ -22,6 +22,7 @@ export default function ProjectModal({ isOpen, onClose, onSave, project }) {
     role: "",
     duration: "",
     demo_url: "",
+    thumbnail_url: "",
   });
 
   useEffect(() => {
@@ -41,6 +42,7 @@ export default function ProjectModal({ isOpen, onClose, onSave, project }) {
         role: "",
         duration: "",
         demo_url: "",
+        thumbnail_url: "",
       });
     }
   }, [project, isOpen]);
@@ -258,6 +260,45 @@ export default function ProjectModal({ isOpen, onClose, onSave, project }) {
                 placeholder="e.g. 3 Months"
               />
             </div>
+            <div>
+              <label className="block text-xs text-secondary-text mb-1">
+                Demo URL
+              </label>
+              <input
+                type="url"
+                name="demo_url"
+                value={formData.demo_url}
+                onChange={handleChange}
+                className="w-full px-4 py-2 rounded-lg border border-border-custom bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-accent text-sm"
+                placeholder="https://..."
+              />
+            </div>
+          </div>
+
+          <div className="mb-4">
+            <label className="block text-xs text-secondary-text mb-1">
+              Thumbnail URL
+            </label>
+            <input
+              type="url"
+              name="thumbnail_url"
+              value={formData.thumbnail_url}
+              onChange={handleChange}
+              className="w-full px-4 py-2 rounded-lg border border-border-custom bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-accent text-sm"
+              placeholder="https://example.com/thumbnail.jpg"
+            />
+            {formData.thumbnail_url && (
+              <div className="mt-2">
+                <img
+                  src={formData.thumbnail_url}
+                  alt="Thumbnail preview"
+                  className="w-full h-32 object-cover rounded-lg border border-border-custom"
+                />
+              </div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-xs text-secondary-text mb-1">
                 Demo URL
