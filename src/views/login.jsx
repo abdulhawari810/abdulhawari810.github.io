@@ -91,9 +91,16 @@ export default function Login() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 bg-foreground text-background font-semibold rounded-lg hover:bg-accent transition-colors disabled:opacity-50"
+            className="w-full py-3 bg-foreground text-background font-semibold rounded-lg hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
-            {loading ? "Signing in..." : "Sign In"}
+            {loading ? (
+              <>
+                <div className="w-4 h-4 border-2 border-background border-t-transparent rounded-full animate-spin"></div>
+                <span>Signing in...</span>
+              </>
+            ) : (
+              "Sign In"
+            )}
           </button>
         </form>
       </div>

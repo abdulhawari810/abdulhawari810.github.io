@@ -42,6 +42,10 @@ export default function Dashboard() {
   const [savingProfile, setSavingProfile] = useState(false);
   const [savingProject, setSavingProject] = useState(false);
   const [deletingProject, setDeletingProject] = useState(false);
+  const [activeFilter, setActiveFilter] = useState("all");
+  const [categories, setCategories] = useState(["branding", "product", "web"]);
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  const [newCategory, setNewCategory] = useState("");
   const [profileForm, setProfileForm] = useState({
     username: "",
     full_name: "",
@@ -181,6 +185,59 @@ export default function Dashboard() {
       setDeletingProject(false);
     }
   };
+
+  // ==================== CATEGORY MANAGEMENT ====================
+  const handleAddCategory = () => {
+    setNewCategory("");
+    setIsCategoryModalOpen(true);
+  };
+
+  const handleSaveCategory = async () => {
+    if (!newCategory.trim()) return;
+
+    // Validasi maksimal 5 kategori
+    if (categories.length >= 5) {
+      toast.error("Maksimal 5 kategori", {
+        description: "Hanya boleh menambahkan maksimal 5 kategori.",
+      });
+      return;
+    }
+
+    const categoryId = newCategory.trim().toLowerCase().replace(/\s+/g, "-");
+
+    if (!categories.includes(categoryId)) {
+      setCategories((prev) => [...prev, categoryId]);
+    }
+    setIsCategoryModalOpen(false);
+    toast.success("Kategori ditambahkan!", {
+      description: `"${newCategory.trim()}" telah ditambahkan.`,
+    });
+  };
+
+  const handleDeleteCategory = async (categoryId) => {
+    if (categories.length <= 1) {
+      toast.error("Cannot delete", {
+        description: "At least one category must remain.",
+      });
+      return;
+    }
+
+    const projectsToUpdate = projects.filter((p) => p.category === categoryId);
+    for (const project of projectsToUpdate) {
+      await updateProject(project.id, { category: "branding" });
+    }
+
+    setCategories((prev) => prev.filter((c) => c !== categoryId));
+    setActiveFilter("all");
+    toast.success("Category deleted!", {
+      description: `"${categoryId}" has been removed. Projects moved to Branding.`,
+    });
+  };
+
+  // Filter projects based on active filter
+  const filteredProjects = activeFilter === "all"
+    ? projects
+    : projects.filter((p) => p.category === activeFilter);
 
   // ==================== PROFILE UPDATE ====================
 
@@ -433,6 +490,34 @@ export default function Dashboard() {
                   </button>
                 </div>
 
+                {/* Filter Tabs */}
+                <div className="flex items-center justify-between gap-3 mb-6">
+                  <div className="flex gap-3">
+                    {["all", ...categories].map((filter) => (
+                      <button
+                        key={filter}
+                        onClick={() => setActiveFilter(filter)}
+                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                          activeFilter === filter
+                            ? "bg-foreground text-background"
+                            : "border border-border-custom/50 text-secondary-text hover:border-foreground hover:text-foreground"
+                        }`}
+                      >
+                        {filter === "all" ? "All work" : filter.charAt(0).toUpperCase() + filter.slice(1)}
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    onClick={handleAddCategory}
+                    className="px-4 py-2 border border-border-custom rounded-full text-sm font-medium hover:bg-border-custom/20 transition-colors flex items-center gap-2"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                    Add Category
+                  </button>
+                </div>
+
                 <div className="bg-background border border-border-custom rounded-lg overflow-hidden">
                   {projects.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-16">
@@ -463,7 +548,7 @@ export default function Dashboard() {
                       </button>
                     </div>
                   ) : (
-                    projects.map((project, index) => (
+                    filteredProjects.map((project, index) => (
                   <div
                     key={project.id}
                     className={`flex items-center justify-between p-4 hover:bg-border-custom/10 transition-colors ${
@@ -856,6 +941,58 @@ export default function Dashboard() {
                 Delete
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Category Modal */}
+      {isCategoryModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-background border border-border-custom rounded-lg w-full max-w-md p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold">Add Category</h3>
+              <button
+                onClick={() => setIsCategoryModalOpen(false)}
+                className="w-8 h-8 rounded-full hover:bg-border-custom/20 flex items-center justify-center transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <form onSubmit={(e) => { e.preventDefault(); handleSaveCategory(); }}>
+              <div className="mb-4">
+                <label className="block text-xs text-secondary-text mb-1">Category Name</label>
+                <input
+                  type="text"
+                  value={newCategory}
+                  onChange={(e) => setNewCategory(e.target.value)}
+                  className="w-full px-4 py-2 rounded-lg border border-border-custom bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-accent text-sm"
+                  placeholder="e.g. illustration"
+                  autoFocus
+                  disabled={categories.length >= 5}
+                />
+                {categories.length >= 5 && (
+                  <p className="text-xs text-danger mt-1">Maksimal 5 kategori tercapai</p>
+                )}
+              </div>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsCategoryModalOpen(false)}
+                  className="flex-1 py-2 border border-border-custom rounded-lg text-sm font-medium hover:bg-border-custom/20 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={!newCategory.trim() || categories.length >= 5}
+                  className="flex-1 py-2 bg-foreground text-background rounded-lg text-sm font-medium hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Add Category
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

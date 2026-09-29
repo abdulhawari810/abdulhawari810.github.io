@@ -86,7 +86,7 @@ export default function Detail() {
         </h1>
 
         {/* Right - Description */}
-        <div className="flex items-end">
+        <div className="flex items-end justify-end">
           <p className="text-sm text-secondary-text leading-relaxed max-w-sm">
             {project.description}
           </p>
@@ -97,12 +97,22 @@ export default function Detail() {
       <div
         className={`w-full aspect-[16/9] ${colorMap[project.color] || "bg-sand"} rounded-lg overflow-hidden relative mb-16`}
       >
-        {/* Initials */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-[8rem] md:text-[12rem] lg:text-[16rem] font-black text-background/90 leading-none select-none">
-            {project.initials}
-          </span>
-        </div>
+        {/* Thumbnail or Initials */}
+        {project.thumbnail_url ? (
+          <div className="absolute inset-0">
+            <img
+              src={project.thumbnail_url}
+              alt={project.title}
+              className="w-full h-full object-contain object-center"
+            />
+          </div>
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="text-[8rem] md:text-[12rem] lg:text-[16rem] font-black text-background/90 leading-none select-none">
+              {project.initials}
+            </span>
+          </div>
+        )}
 
         {/* Label top-left */}
         <span className="absolute top-4 left-4 text-xs font-semibold tracking-[0.15em] uppercase text-background/80">
@@ -143,7 +153,9 @@ export default function Detail() {
                 key={item.label}
                 className="flex items-center justify-between py-4 border-b border-border-custom/30"
               >
-                <span className="text-sm text-secondary-text">{item.label}</span>
+                <span className="text-sm text-secondary-text">
+                  {item.label}
+                </span>
                 <span className="text-sm font-medium">{item.value}</span>
               </div>
             ))}

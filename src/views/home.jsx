@@ -1,13 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { getAllProjects, getProfile } from "@/database/firestoreQueries";
-
-const filters = [
-  { id: "all", label: "All work" },
-  { id: "branding", label: "Branding" },
-  { id: "product", label: "Product" },
-  { id: "web", label: "Web" },
-];
 
 const colorMap = {
   sage: "bg-sage",
@@ -34,10 +27,15 @@ export default function Home() {
     fetchData();
   }, []);
 
-  const filteredProjects =
-    activeFilter === "all"
-      ? projects
-      : projects.filter((p) => p.category === activeFilter);
+  // Extract unique categories from projects
+  const categories = useMemo(() => {
+    const cats = projects.map((p) => p.category).filter(Boolean);
+    return [...new Set(cats)];
+  }, [projects]);
+
+  const filteredProjects = activeFilter === "all"
+    ? projects
+    : projects.filter((p) => p.category === activeFilter);
 
   if (loading) {
     return (
@@ -300,17 +298,27 @@ export default function Home() {
 
         {/* Filter Tabs */}
         <div className="flex gap-3 mb-8">
-          {filters.map((filter) => (
+          <button
+            onClick={() => setActiveFilter("all")}
+            className={`px-4 md:px-5 py-2 rounded-full text-sm font-medium transition-all ${
+              activeFilter === "all"
+                ? "bg-foreground text-background"
+                : "border border-border-custom/50 text-secondary-text hover:border-foreground hover:text-foreground"
+            }`}
+          >
+            Semua Karya
+          </button>
+          {categories.map((cat) => (
             <button
-              key={filter.id}
-              onClick={() => setActiveFilter(filter.id)}
+              key={cat}
+              onClick={() => setActiveFilter(cat)}
               className={`px-4 md:px-5 py-2 rounded-full text-sm font-medium transition-all ${
-                activeFilter === filter.id
+                activeFilter === cat
                   ? "bg-foreground text-background"
                   : "border border-border-custom/50 text-secondary-text hover:border-foreground hover:text-foreground"
               }`}
             >
-              {filter.label}
+              {cat.charAt(0).toUpperCase() + cat.slice(1)}
             </button>
           ))}
         </div>
@@ -336,11 +344,11 @@ export default function Home() {
 
                 {/* Thumbnail or Initials */}
                 {project.thumbnail_url ? (
-                  <div className="absolute inset-0">
+                  <div className="absolute inset-0 flex items-center justify-center p-8">
                     <img
                       src={project.thumbnail_url}
                       alt={project.title}
-                      className="w-full h-full object-cover"
+                      className="max-w-full max-h-full object-contain"
                     />
                   </div>
                 ) : (
